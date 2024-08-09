@@ -1,24 +1,17 @@
 #include "generic_sensor_aht20_driver.h"
 
 generic_err_t generic_sensor_aht20_init(generic_sensor_aht20_driver_interface_t *pfdev) {
-    printf("init_start\r\n");
-    printf("1\r\n");
     uint8_t readBuffer;
-    printf("2\r\n");
     pfdev->pfsystem_interface->delay_ms(40);
-    printf("3\r\n");
     pfdev->pfsystem_interface->receive(&readBuffer, 1);
-    printf("4\r\n");
     if ((readBuffer & 0x08) == 0x00) {
         uint8_t sendBuffer[3] = {0xBE, 0x08, 0x00};
         pfdev->pfsystem_interface->send(sendBuffer, 3);
     }
-    printf("init_end\r\n");
     return GENERIC_OK;
 }
 
 generic_err_t generic_sensor_aht20_measure(void *pfdev) {
-    printf("measure_start\r\n");
     generic_sensor_aht20_driver_interface_t *ptemp = pfdev;
     uint8_t sendBuffer[3] = {0xAC, 0x33, 0x00};
     uint8_t readBuffer[6];
@@ -38,7 +31,6 @@ generic_err_t generic_sensor_aht20_measure(void *pfdev) {
         ptemp->humidity = humi * 100 / (1 << 20);
         ptemp->temperature = temp * 200 / (1 << 20) - 50;
     }
-    printf("measure_end\r\n");
     return GENERIC_OK;
 }
 
