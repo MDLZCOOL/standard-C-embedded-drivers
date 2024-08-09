@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <stddef.h>
-#include "struct_typedef.h"
+#include "generic_err.h"
 
 typedef struct {
     generic_err_t (*send)(uint8_t *data, size_t len);

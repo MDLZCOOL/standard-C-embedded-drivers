@@ -1,7 +1,7 @@
 #pragma once
 #include <stddef.h>
 #include <string.h>
-#include "struct_typedef.h"
+#include "generic_err.h"
 #include "stdlib.h"
 #include <stdio.h>
 #include "generic_driver_interface.h"
