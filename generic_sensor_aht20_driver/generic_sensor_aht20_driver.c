@@ -40,6 +40,9 @@ generic_err_t generic_sensor_aht20_whoami(generic_sensor_aht20_driver_interface_
                                       generic_err_t (*delay_ms_func)(uint32_t nms),
                                       generic_err_t (*delay_us_func)(uint32_t nus)) {
     pfdev->pfsystem_interface = malloc(sizeof(system_interface_t));
+    if (pfdev->pfsystem_interface == NULL) {
+        return GENERIC_FAIL;
+    }
     pfdev->pfsystem_interface->send = generic_send_func;
     pfdev->pfsystem_interface->receive = generic_receive_func;
     pfdev->pfsystem_interface->delay_ms = delay_ms_func;
