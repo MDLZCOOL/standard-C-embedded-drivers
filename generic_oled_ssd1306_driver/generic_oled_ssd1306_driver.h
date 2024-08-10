@@ -68,13 +68,13 @@ typedef struct {
     generic_err_t (*pfdirect_set_color_mode)(void *pfdev, generic_oled_ssd1306_color_mode color_mode);
 } generic_oled_ssd1306_driver_interface_t;
 
-generic_err_t generic_oled_ssd1306_whoami(void *pfdev,
+generic_err_t generic_oled_ssd1306_whoami(generic_oled_ssd1306_driver_interface_t *pfdev,
                                           generic_err_t (*generic_send_func)(uint8_t *data, size_t len),
                                           generic_err_t (*generic_receive_func)(uint8_t *data, size_t len),
                                           generic_err_t (*delay_ms_func)(uint32_t nms),
                                           generic_err_t (*delay_us_func)(uint32_t nus));
 
-generic_err_t generic_sensor_aht20_del(void *pfdev);
+generic_err_t generic_oled_ssd1306_del(generic_oled_ssd1306_driver_interface_t *pfdev);
 
 #ifdef __cplusplus
 }

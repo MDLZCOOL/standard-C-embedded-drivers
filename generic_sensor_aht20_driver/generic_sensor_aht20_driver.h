@@ -22,10 +22,10 @@ typedef struct {
 } generic_sensor_aht20_driver_interface_t;
 
 generic_err_t generic_sensor_aht20_whoami(generic_sensor_aht20_driver_interface_t *pfdev,
-                                      generic_err_t (*generic_send_func)(uint8_t *data, size_t len),
-                                      generic_err_t (*generic_receive_func)(uint8_t *data, size_t len),
-                                      generic_err_t (*delay_ms_func)(uint32_t nms),
-                                      generic_err_t (*delay_us_func)(uint32_t nus));
+                                          generic_err_t (*generic_send_func)(uint8_t *data, size_t len),
+                                          generic_err_t (*generic_receive_func)(uint8_t *data, size_t len),
+                                          generic_err_t (*delay_ms_func)(uint32_t nms),
+                                          generic_err_t (*delay_us_func)(uint32_t nus));
 
 generic_err_t generic_sensor_aht20_del(generic_sensor_aht20_driver_interface_t *pfdev);
 

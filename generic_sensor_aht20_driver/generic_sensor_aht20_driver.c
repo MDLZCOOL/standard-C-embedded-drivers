@@ -11,7 +11,7 @@ generic_err_t generic_sensor_aht20_init(generic_sensor_aht20_driver_interface_t 
     return GENERIC_OK;
 }
 
-generic_err_t generic_sensor_aht20_measure(void *pfdev) {
+generic_err_t generic_sensor_aht20_measure(generic_sensor_aht20_driver_interface_t *pfdev) {
     generic_sensor_aht20_driver_interface_t *ptemp = pfdev;
     uint8_t sendBuffer[3] = {0xAC, 0x33, 0x00};
     uint8_t readBuffer[6];
@@ -35,10 +35,10 @@ generic_err_t generic_sensor_aht20_measure(void *pfdev) {
 }
 
 generic_err_t generic_sensor_aht20_whoami(generic_sensor_aht20_driver_interface_t *pfdev,
-                                      generic_err_t (*generic_send_func)(uint8_t *data, size_t len),
-                                      generic_err_t (*generic_receive_func)(uint8_t *data, size_t len),
-                                      generic_err_t (*delay_ms_func)(uint32_t nms),
-                                      generic_err_t (*delay_us_func)(uint32_t nus)) {
+                                          generic_err_t (*generic_send_func)(uint8_t *data, size_t len),
+                                          generic_err_t (*generic_receive_func)(uint8_t *data, size_t len),
+                                          generic_err_t (*delay_ms_func)(uint32_t nms),
+                                          generic_err_t (*delay_us_func)(uint32_t nus)) {
     pfdev->pfsystem_interface = malloc(sizeof(system_interface_t));
     if (pfdev->pfsystem_interface == NULL) {
         return GENERIC_FAIL;
