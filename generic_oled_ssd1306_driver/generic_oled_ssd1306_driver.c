@@ -168,7 +168,7 @@ generic_err_t generic_oled_ssd1306_draw_filled_rectangle(uint8_t chXpos1, uint8_
     if (chXpos2 - chXpos1 <= 0 || chYpos2 - chYpos1 <= 0) {
         return GENERIC_FAIL;
     }
-    for (int i = 0; chXpos1 + i != chXpos2 - i; i++) {
+    for (int i = 0; chXpos1 + i <= chXpos2 - i; i++) {
         generic_oled_ssd1306_draw_rectangle(chXpos1 + i, chYpos1 + i, chXpos2 - i, chYpos2 - i, color_mode);
     }
     return GENERIC_OK;
@@ -326,7 +326,7 @@ generic_err_t generic_oled_ssd1306_whoami(generic_oled_ssd1306_driver_interface_
     return GENERIC_OK;
 }
 
-generic_err_t generic_sensor_aht20_del(generic_oled_ssd1306_driver_interface_t *pfdev) {
+generic_err_t generic_oled_ssd1306_del(generic_oled_ssd1306_driver_interface_t *pfdev) {
     free(pfdev->pfsystem_interface);
     pfdev->pfsystem_interface = NULL;
     free(pfdev);
