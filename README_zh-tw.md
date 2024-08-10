@@ -5,6 +5,7 @@
   <img src="https://img.shields.io/badge/License-MIT-%2396C40F" alt="License-MIT"/>
   <img src="https://img.shields.io/badge/CopyRight-MDLZCOOL-%2396C40F" alt="CopyRight-MDLZCOOL"/>
 </div>
+如果這個項目對您有幫助或可能有幫助，請點一個Star，這將是我不斷維護倉庫的動力。
 
 # standard-C-embedded-driver簡介
 

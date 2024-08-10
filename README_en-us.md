@@ -5,6 +5,7 @@
   <img src="https://img.shields.io/badge/License-MIT-%2396C40F" alt="License-MIT"/>
   <img src="https://img.shields.io/badge/CopyRight-MDLZCOOL-%2396C40F" alt="CopyRight-MDLZCOOL"/>
 </div>
+If this project is helpful or may be helpful to you, please give me a Star, which will be my motivation to continue maintaining the repository.
 
 # Introduction to standard-C-embedded-driver
 
