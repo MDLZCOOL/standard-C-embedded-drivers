@@ -5,6 +5,8 @@
 #include "stdlib.h"
 #include <stdio.h>
 #include "generic_driver_interface.h"
+#include "generic_oled_fonts_template.h"
+#include "generic_oled_image_template.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -66,6 +68,12 @@ typedef struct {
                                     generic_oled_ssd1306_color_mode color_mode);
 
     generic_err_t (*pfdirect_set_color_mode)(void *pfdev, generic_oled_ssd1306_color_mode color_mode);
+
+    generic_err_t (*pfdraw_string)(uint8_t chXpos, uint8_t chYpos, char *str, const Font *font,
+                                   generic_oled_ssd1306_color_mode color_mode);
+
+    generic_err_t (*pfdraw_image)(uint8_t chXpos, uint8_t chYpos, const Image *image,
+                                  generic_oled_ssd1306_color_mode color_mode);
 } generic_oled_ssd1306_driver_interface_t;
 
 generic_err_t generic_oled_ssd1306_whoami(generic_oled_ssd1306_driver_interface_t *pfdev,
@@ -75,6 +83,9 @@ generic_err_t generic_oled_ssd1306_whoami(generic_oled_ssd1306_driver_interface_
                                           generic_err_t (*delay_us_func)(uint32_t nus));
 
 generic_err_t generic_oled_ssd1306_del(generic_oled_ssd1306_driver_interface_t *pfdev);
+
+void OLED_PrintString(uint8_t x, uint8_t y, char *str, const Font *font,
+                      generic_oled_ssd1306_color_mode color_mode);
 
 #ifdef __cplusplus
 }

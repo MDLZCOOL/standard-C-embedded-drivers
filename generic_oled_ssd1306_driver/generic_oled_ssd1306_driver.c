@@ -164,14 +164,20 @@ generic_err_t generic_oled_ssd1306_draw_rectangle(uint8_t chXpos1, uint8_t chYpo
 generic_err_t generic_oled_ssd1306_draw_filled_rectangle(uint8_t chXpos1, uint8_t chYpos1, uint8_t chXpos2,
                                                          uint8_t chYpos2,
                                                          generic_oled_ssd1306_color_mode color_mode) {
-    // 这里chXpos1, chYpos1, chXpos2, chYpos2分别代表左上和右下
-    if (chXpos2 - chXpos1 <= 0 || chYpos2 - chYpos1 <= 0) {
-        return GENERIC_FAIL;
+    // // 这里chXpos1, chYpos1, chXpos2, chYpos2分别代表左上和右下
+    // if (chXpos2 - chXpos1 <= 0 || chYpos2 - chYpos1 <= 0) {
+    //     return GENERIC_FAIL;
+    // }
+    // for (int i = 0; chXpos1 + i <= chXpos2 - i; i++) {
+    //     generic_oled_ssd1306_draw_rectangle(chXpos1 + i, chYpos1 + i, chXpos2 - i, chYpos2 - i, color_mode);
+    // }
+    // return GENERIC_OK;
+    uint8_t chXpos, chYpos;
+    for (chXpos = chXpos1; chXpos <= chXpos2; chXpos++) {
+        for (chYpos = chYpos1; chYpos <= chYpos2; chYpos++) {
+            generic_oled_ssd1306_draw_point(chXpos, chYpos, color_mode);
+        }
     }
-    for (int i = 0; chXpos1 + i <= chXpos2 - i; i++) {
-        generic_oled_ssd1306_draw_rectangle(chXpos1 + i, chYpos1 + i, chXpos2 - i, chYpos2 - i, color_mode);
-    }
-    return GENERIC_OK;
 }
 
 generic_err_t generic_oled_ssd1306_draw_circle(uint8_t chXpos, uint8_t chYpos, uint8_t chRadius,
@@ -295,6 +301,136 @@ generic_err_t generic_oled_ssd1306_draw_eclipse(uint8_t chXpos, uint8_t chYpos, 
     return GENERIC_OK;
 }
 
+void generic_oled_ssd1306_set_byte_fine(uint8_t page, uint8_t column, uint8_t data, uint8_t start, uint8_t end,
+                                        generic_oled_ssd1306_color_mode color_mode) {
+    static uint8_t temp;
+    if (page >= OLED_PAGE || column >= OLED_COLUMN)
+        return;
+    if (color_mode)
+        data = ~data;
+
+    temp = data | (0xff << (end + 1)) | (0xff >> (8 - start));
+    OLED_GRAM[page][column] &= temp;
+    temp = data & ~(0xff << (end + 1)) & ~(0xff >> (8 - start));
+    OLED_GRAM[page][column] |= temp;
+}
+
+void generic_oled_ssd1306_set_byte(uint8_t page, uint8_t column, uint8_t data,
+                                   generic_oled_ssd1306_color_mode color_mode) {
+    if (page >= OLED_PAGE || column >= OLED_COLUMN)
+        return;
+    if (color_mode)
+        data = ~data;
+    OLED_GRAM[page][column] = data;
+}
+
+void generic_oled_ssd1306_set_bits_fine(uint8_t x, uint8_t y, uint8_t data, uint8_t len,
+                                        generic_oled_ssd1306_color_mode color_mode) {
+    uint8_t page = y / 8;
+    uint8_t bit = y % 8;
+    if (bit + len > 8) {
+        generic_oled_ssd1306_set_byte_fine(page, x, data << bit, bit, 7, color_mode);
+        generic_oled_ssd1306_set_byte_fine(page + 1, x, data >> (8 - bit), 0, len + bit - 1 - 8, color_mode);
+    } else {
+        generic_oled_ssd1306_set_byte_fine(page, x, data << bit, bit, bit + len - 1, color_mode);
+    }
+}
+
+void generic_oled_ssd1306_set_bits(uint8_t x, uint8_t y, uint8_t data, generic_oled_ssd1306_color_mode color_mode) {
+    uint8_t page = y / 8;
+    uint8_t bit = y % 8;
+    generic_oled_ssd1306_set_byte_fine(page, x, data << bit, bit, 7, color_mode);
+    if (bit) {
+        generic_oled_ssd1306_set_byte_fine(page + 1, x, data >> (8 - bit), 0, bit - 1, color_mode);
+    }
+}
+
+void generic_oled_ssd1306_set_block(uint8_t x, uint8_t y, const uint8_t *data, uint8_t w, uint8_t h,
+                                    generic_oled_ssd1306_color_mode color_mode) {
+    uint8_t fullRow = h / 8; // 完整的行数
+    uint8_t partBit = h % 8; // 不完整的字节中的有效位数
+    for (uint8_t i = 0; i < w; i++) {
+        for (uint8_t j = 0; j < fullRow; j++) {
+            generic_oled_ssd1306_set_bits(x + i, y + j * 8, data[i + j * w], color_mode);
+        }
+    }
+    if (partBit) {
+        uint16_t fullNum = w * fullRow; // 完整的字节数
+        for (uint8_t i = 0; i < w; i++) {
+            generic_oled_ssd1306_set_bits_fine(x + i, y + (fullRow * 8), data[fullNum + i], partBit, color_mode);
+        }
+    }
+}
+
+void generic_oled_ssd1306_draw_ascii_char(uint8_t x, uint8_t y, char ch, const ASCIIFont *font,
+                                          generic_oled_ssd1306_color_mode color_mode) {
+    generic_oled_ssd1306_set_block(x, y, font->chars + (ch - ' ') * (((font->h + 7) / 8) * font->w), font->w, font->h,
+                                   color_mode);
+}
+
+uint8_t generic_oled_ssd1306_get_utf8_len(char *string) {
+    if ((string[0] & 0x80) == 0x00) {
+        return 1;
+    }
+    if ((string[0] & 0xE0) == 0xC0) {
+        return 2;
+    }
+    if ((string[0] & 0xF0) == 0xE0) {
+        return 3;
+    }
+    if ((string[0] & 0xF8) == 0xF0) {
+        return 4;
+    }
+    return 0;
+}
+
+void generic_oled_ssd1306_draw_string(uint8_t chXpos, uint8_t chYpos, char *str, const Font *font,
+                                      generic_oled_ssd1306_color_mode color_mode) {
+    uint16_t i = 0; // 字符串索引
+    uint8_t oneLen = (((font->h + 7) / 8) * font->w) + 4; // 一个字模占多少字节
+    uint8_t found; // 是否找到字模
+    uint8_t utf8Len; // UTF-8编码长度
+    uint8_t *head; // 字模头指针
+    while (str[i]) {
+        found = 0;
+        utf8Len = generic_oled_ssd1306_get_utf8_len(str + i);
+        if (utf8Len == 0)
+            break; // 有问题的UTF-8编码
+
+        // 寻找字符  TODO 优化查找算法, 二分查找或者hash
+        for (uint8_t j = 0; j < font->len; j++) {
+            head = (uint8_t *) (font->chars) + (j * oneLen);
+            if (memcmp(str + i, head, utf8Len) == 0) {
+                generic_oled_ssd1306_set_block(chXpos, chYpos, head + 4, font->w, font->h, color_mode);
+                // 移动光标
+                chXpos += font->w;
+                i += utf8Len;
+                found = 1;
+                break;
+            }
+        }
+
+        // 若未找到字模,且为ASCII字符, 则缺省显示ASCII字符
+        if (found == 0) {
+            if (utf8Len == 1) {
+                generic_oled_ssd1306_draw_ascii_char(chXpos, chYpos, str[i], font->ascii, color_mode);
+                // 移动光标
+                chXpos += font->ascii->w;
+                i += utf8Len;
+            } else {
+                generic_oled_ssd1306_draw_ascii_char(chXpos, chYpos, ' ', font->ascii, color_mode);
+                chXpos += font->ascii->w;
+                i += utf8Len;
+            }
+        }
+    }
+}
+
+void generic_oled_ssd1306_draw_bitmap(uint8_t x, uint8_t y, const Image *img,
+                                       generic_oled_ssd1306_color_mode color_mode) {
+     generic_oled_ssd1306_set_block(x, y, img->data, img->w, img->h, color_mode);
+}
+
 generic_err_t generic_oled_ssd1306_whoami(generic_oled_ssd1306_driver_interface_t *pfdev,
                                           generic_err_t (*generic_send_func)(uint8_t *data, size_t len),
                                           generic_err_t (*generic_receive_func)(uint8_t *data, size_t len),
@@ -323,6 +459,8 @@ generic_err_t generic_oled_ssd1306_whoami(generic_oled_ssd1306_driver_interface_
     pfdev->pfdraw_filled_triangle = generic_oled_ssd1306_draw_filled_triangle;
     pfdev->pfdraw_eclipse = generic_oled_ssd1306_draw_eclipse;
     pfdev->pfdirect_set_color_mode = generic_oled_ssd1306_direct_set_color_mode;
+    pfdev->pfdraw_string = generic_oled_ssd1306_draw_string;
+    pfdev->pfdraw_image = generic_oled_ssd1306_draw_bitmap;
     return GENERIC_OK;
 }
 
